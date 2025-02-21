@@ -4,23 +4,59 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import Link from 'next/link';
+import { useUserRegisterMutation } from '@/redux/api/foodApi';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
+
 
 const schema = z.object({
     name: z.string().min(2, 'Name must be at least 2 characters'),
     email: z.string().email('Invalid email address'),
     password: z.string().min(4, 'Password must be at least 4 characters'),
+    role: z.enum(['customer', 'admin'], { message: 'Invalid role' })
 });
 
 export default function RegisterForm() {
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-    } = useForm({ resolver: zodResolver(schema) });
+    const {register, handleSubmit, formState: { errors } } = useForm({ resolver: zodResolver(schema) });
+    const Router = useRouter()
+    const [userRegister, { data, isSuccess, isError, error:registionError } ] = useUserRegisterMutation()
 
-    const onSubmit = (data: { name: string, email: string, password: string }) => {
+
+
+    useEffect(()=> {
+      if(isSuccess){
+        toast.success('Sign-up Successfull!!')
+        console.log(data)
+        if(data?.status){
+            localStorage.setItem('accessToken', data?.data?.accessToken)
+        }
+        Router.push('/')
+      }
+      if(isError){
+        toast.error('Sign-up failed. Please try again.')
+        console.log(registionError)
+      }
+    }, [isSuccess, isError])
+
+
+
+
+
+    const onSubmit = (data: { name: string, email: string, password: string, role : 'customer' | 'admin' }) => {
         console.log(data);
+
+        const userData = {
+            name : data.name,
+            email: data.email,
+            password: data.password,
+            role : data.role
+        }
+        userRegister({data: userData})
     };
+
+
+
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100 mt-16">
@@ -62,6 +98,19 @@ export default function RegisterForm() {
                                 className="w-full mt-1 p-2  border rounded-md focus:ring focus:ring-blue-300 focus:outline-none"
                             />
                             {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
+                        </div>
+
+                         {/* Role Dropdown */}
+                         <div>
+                            <select
+                                {...register('role')}
+                                className="w-full mt-1 p-2 border rounded-md focus:ring focus:ring-blue-300 focus:outline-none"
+                            >
+                                <option value="" className='text-gray-300' >Select Role</option>
+                                <option value="customer">Customer</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                            {errors.role && <p className="text-red-500 text-sm">{errors.role.message}</p>}
                         </div>
                     </div>
                     <button
