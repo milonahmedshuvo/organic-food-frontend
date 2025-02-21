@@ -7,11 +7,20 @@ import { CiSearch } from 'react-icons/ci';
 import { LiaShoppingBagSolid } from 'react-icons/lia';
 import { PiUserLight } from 'react-icons/pi';
 import logo from '../images/logonav.webp';
+import { useSelector } from 'react-redux';
+import { RootState } from '../redux/store';
+import { store } from "../redux/store"
+import { AuthState } from '@/types/authTypes';
+import { logout } from '@/redux/features/auth/authSlice';
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [cartCount, setCartCount] = useState(0);
     const [scrolling, setScrolling] = useState(false);
+    const { user } = useSelector((state:RootState) => state.auth) as AuthState
+
+    console.log({user})
+
 
     useEffect(() => {
         const handleScroll = () => {
@@ -25,6 +34,12 @@ const Navbar = () => {
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
+
+
+      const handleLogout = () => {
+        store.dispatch(logout())
+      }
+
 
     // F7ECB4
     return (
@@ -55,8 +70,17 @@ const Navbar = () => {
                         <div className="hidden md:flex items-center gap-8 font-medium">
                             <Link className="text-black duration-500" href="/">Home</Link>
                             <Link className="text-black duration-500" href="/shop">Shop</Link>
-                            <Link className="text-black duration-500" href="/register">Register</Link>
-                            <Link className="text-black duration-500" href="/new">What’s New</Link>
+
+                            {
+                                user?.email && <Link className="text-black duration-500" href="/new">Dashbord</Link> 
+                             }
+
+                            {
+                                user?.email ? <Link onClick={handleLogout} className="text-black duration-500" href="/">Logout</Link> : <Link className="text-black duration-500" href="/login">Login</Link> 
+
+                            }
+                             
+
                         </div>
 
                         <div className="flex items-center gap-5">

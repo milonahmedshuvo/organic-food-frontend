@@ -4,6 +4,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import Link from 'next/link';
+import { useUserLoginMutation } from '@/redux/api/foodApi';
+import toast from 'react-hot-toast';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { store } from "../../redux/store"
+import { loginSuccess } from '@/redux/features/auth/authSlice';
 
 const schema = z.object({
     email: z.string().email('Invalid email address'),
@@ -11,14 +17,48 @@ const schema = z.object({
 });
 
 export default function LoginForm() {
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-    } = useForm({ resolver: zodResolver(schema) });
+    const Router = useRouter()
+    const {register,handleSubmit,formState: { errors } } = useForm({ resolver: zodResolver(schema) });
+    const [userLogin, { data, isSuccess, isError, error:loginError } ] = useUserLoginMutation()
+
+
+
+    useEffect(()=> {
+      if(isSuccess){
+        toast.success('Login Successfull!!')
+        console.log(data)
+        if(data?.status){
+            localStorage.setItem('accessToken', data?.data?.accessToken)
+        }
+
+        const authData = {
+            email: data?.data?.user?.email,
+            role: data?.data?.user?.role
+        } 
+        console.log(authData)
+        store.dispatch(loginSuccess(authData))
+
+
+        Router.push('/')
+      }
+      if(isError){
+        toast.error('login failed. Please try again.')
+        console.log(loginError)
+      }
+    }, [isSuccess, isError])
+
+
+
+
 
     const onSubmit = (data: { email: string, password: string }) => {
         console.log(data);
+
+        const loginData = {
+            email: data.email,
+            password: data.password
+        }
+        userLogin({data : loginData })
     };
 
     return (

@@ -20,7 +20,7 @@ export const organicFoodApi = createApi({
             query : (data) => {
 
                 return {
-                    url : '/api/user/login',
+                    url : '/api/v1/user/login',
                     method : 'POST',
                     body : data
                 }
