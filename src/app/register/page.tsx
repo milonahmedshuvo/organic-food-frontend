@@ -8,6 +8,8 @@ import { useUserRegisterMutation } from '@/redux/api/foodApi';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { store } from "../../redux/store"
+import { loginSuccess } from '@/redux/features/auth/authSlice';
 
 
 const schema = z.object({
@@ -31,6 +33,16 @@ export default function RegisterForm() {
         if(data?.status){
             localStorage.setItem('accessToken', data?.data?.accessToken)
         }
+        const authData = {
+                    email: data?.data?.result?.email,
+                    role: data?.data?.result?.role
+                } 
+
+                console.log({authData})
+                localStorage.setItem('user', JSON.stringify(authData))
+                store.dispatch(loginSuccess(authData))
+
+
         Router.push('/')
       }
       if(isError){

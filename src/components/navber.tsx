@@ -10,17 +10,28 @@ import logo from '../images/logonav.webp';
 import { useSelector } from 'react-redux';
 import { RootState } from '../redux/store';
 import { store } from "../redux/store"
-import { AuthState } from '@/types/authTypes';
+import { AuthState, User } from '@/types/authTypes';
 import { logout } from '@/redux/features/auth/authSlice';
+import { json } from 'stream/consumers';
+import toast from 'react-hot-toast';
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [cartCount, setCartCount] = useState(0);
     const [scrolling, setScrolling] = useState(false);
-    const { user } = useSelector((state:RootState) => state.auth) as AuthState
+    const { user } = useSelector((state: RootState) => state.auth) as AuthState
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
 
-    console.log({user})
+    useEffect(() => {
+        const storedData = localStorage.getItem('user');
+        if (storedData) {
+            setCurrentUser(JSON.parse(storedData) as User);
+        }
+    }, [user?.email]);
 
+
+
+    console.log({ currentUser })
 
     useEffect(() => {
         const handleScroll = () => {
@@ -36,9 +47,13 @@ const Navbar = () => {
     }, []);
 
 
-      const handleLogout = () => {
+    const handleLogout = () => {
         store.dispatch(logout())
-      }
+        localStorage.removeItem('user')
+        localStorage.removeItem('accessToken')
+        setCurrentUser(null)
+        toast.success('Logout successfull!!')
+    }
 
 
     // F7ECB4
@@ -72,14 +87,14 @@ const Navbar = () => {
                             <Link className="text-black duration-500" href="/shop">Shop</Link>
 
                             {
-                                user?.email && <Link className="text-black duration-500" href="/new">Dashbord</Link> 
-                             }
+                                currentUser?.email && <Link className="text-black duration-500" href="/dashboard">Dashbord</Link>
+                            }
 
                             {
-                                user?.email ? <Link onClick={handleLogout} className="text-black duration-500" href="/">Logout</Link> : <Link className="text-black duration-500" href="/login">Login</Link> 
+                                currentUser?.email ? <Link onClick={handleLogout} className="text-black duration-500" href="/">Logout</Link> : <Link className="text-black duration-500" href="/login">Login</Link>
 
                             }
-                             
+
 
                         </div>
 

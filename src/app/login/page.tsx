@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { store } from "../../redux/store"
 import { loginSuccess } from '@/redux/features/auth/authSlice';
 
+
 const schema = z.object({
     email: z.string().email('Invalid email address'),
     password: z.string().min(4, 'Password must be at least 4 characters'),
@@ -35,7 +36,7 @@ export default function LoginForm() {
             email: data?.data?.user?.email,
             role: data?.data?.user?.role
         } 
-        console.log(authData)
+        localStorage.setItem('user', JSON.stringify(authData))
         store.dispatch(loginSuccess(authData))
 
 
