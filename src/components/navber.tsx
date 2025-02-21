@@ -26,8 +26,9 @@ const Navbar = () => {
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
+    // F7ECB4
     return (
-        <div className={`fixed w-full top-0 left-0 z-50 transition-all duration-300 ${scrolling ? 'bg-white shadow-lg' : 'bg-transparent'}`}>
+        <div className={`fixed w-full top-0 left-0 z-50 transition-all duration-300  ${scrolling ? 'bg-white shadow-lg' : 'bg-transparent'}`}>
             <nav className="w-full py-5">
                 <div className="px-3 md:px-14 lg:px-24">
                     <div className="flex justify-between items-center">
@@ -52,10 +53,10 @@ const Navbar = () => {
                         </div>
 
                         <div className="hidden md:flex items-center gap-8 font-medium">
-                            <Link className="text-gray-700 hover:text-textBlue duration-500" href="/">Home</Link>
-                            <Link className="text-gray-700 hover:text-textBlue duration-500" href="/shop">Shop</Link>
-                            <Link className="text-gray-700 hover:text-textBlue duration-500" href="/deals">Deals</Link>
-                            <Link className="text-gray-700 hover:text-textBlue duration-500" href="/new">What’s New</Link>
+                            <Link className="text-black duration-500" href="/">Home</Link>
+                            <Link className="text-black duration-500" href="/shop">Shop</Link>
+                            <Link className="text-black duration-500" href="/deals">Deals</Link>
+                            <Link className="text-black duration-500" href="/new">What’s New</Link>
                         </div>
 
                         <div className="flex items-center gap-5">
