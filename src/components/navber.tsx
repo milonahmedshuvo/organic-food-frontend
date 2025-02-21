@@ -55,7 +55,7 @@ const Navbar = () => {
                         <div className="hidden md:flex items-center gap-8 font-medium">
                             <Link className="text-black duration-500" href="/">Home</Link>
                             <Link className="text-black duration-500" href="/shop">Shop</Link>
-                            <Link className="text-black duration-500" href="/deals">Deals</Link>
+                            <Link className="text-black duration-500" href="/register">Register</Link>
                             <Link className="text-black duration-500" href="/new">What’s New</Link>
                         </div>
 
