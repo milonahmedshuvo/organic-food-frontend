@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import { RootState } from '../../redux/store';
 import { store } from "../../redux/store"
 import { addToProduct, decreaseProduct, removeProduct } from "@/redux/features/cart/cartSlice";
+import Link from "next/link";
 
 export interface TProduct {
   _id: string;
@@ -24,10 +25,6 @@ export default function CartPage() {
 
   // console.log({allState})
   // console.log('prduce4ee', allState?.products)
-
-
-
-
 
 
   return (
@@ -102,9 +99,11 @@ export default function CartPage() {
           Total: $
            {allState?.totaltk}
         </p>
+        <Link href='/checkout'>
         <button className="bg-green-600 text-white px-5 py-3 mt-4 rounded hover:bg-green-700 transition">
           Checkout
         </button>
+        </Link>
       </div>
     </div>
   );

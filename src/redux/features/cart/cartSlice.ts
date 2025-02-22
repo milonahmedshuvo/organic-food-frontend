@@ -53,7 +53,7 @@ const cartSlice = createSlice({
 
        removeProduct: (state, action ) => {
         state.products = state.products.filter((product) => product._id !== action.payload._id )
-        state.totaltk = state.totaltk - parseInt(action.payload.tk) * action.payload.quantity
+        state.totaltk = state.totaltk - parseInt(action.payload.tk) * parseInt(action.payload.quantity) 
         state.totalProductCount = state.totalProductCount - 1
        },
 
