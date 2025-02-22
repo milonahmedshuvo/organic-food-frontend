@@ -1,117 +1,194 @@
 "use client";
-import { useState } from "react";
+
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import toast from "react-hot-toast";
+
+// Product types
+export interface TProduct {
+  name: string;
+  price: number;
+  stock: number;
+  image: FileList;
+  description: string;
+  category: string;
+}
+
+// Validation schema
+const productSchema = z.object({
+  name: z.string().min(1, "Product name is required"),
+  price: z.number().min(0, "Price must be a positive number"),
+  stock: z.number().min(0, "Stock must be a positive number"),
+  image: z
+    .instanceof(FileList)
+    .refine((files) => files.length === 1, "Image is required"),
+  description: z.string().min(1, "Description is required"),
+  category: z.string().min(1, "Category is required"),
+});
 
 export default function AddProductPage() {
-  const [product, setProduct] = useState({
-    name: "",
-    price: "",
-    image: "",
-    description: "",
-    stock: "", // Added stock input
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<TProduct>({
+    resolver: zodResolver(productSchema),
   });
 
-  const [productList, setProductList] = useState<
-    {
-      name: string;
-      price: string;
-      image: string;
-      description: string;
-      stock: string;
-    }[]
-  >([]);
-
-  // Handle input changes
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    setProduct({ ...product, [e.target.name]: e.target.value });
-  };
-
   // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (
-      !product.name ||
-      !product.price ||
-      !product.image ||
-      !product.description ||
-      !product.stock
-    ) {
-      alert("Please fill out all fields.");
+  const onSubmit = async (data: TProduct) => {
+    if (!data.image || data.image.length === 0) {
+      toast.error("Please provide an image");
       return;
     }
-    setProductList([...productList, product]); // Add to product list
-    setProduct({ name: "", price: "", image: "", description: "", stock: "" }); // Reset form
+
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      toast.error("User is not authenticated");
+      return;
+    }
+
+
+
+    const formData = new FormData();
+    formData.append("image", data.image[0]);
+
+    try {
+      // Upload Image to imgbb
+      const imageResponse = await fetch(
+        "https://api.imgbb.com/1/upload?key=1e1cb35e45fc37d4bfe6bd8a3ed195cc",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const imageResult = await imageResponse.json();
+
+      if (imageResult.success) {
+        console.log("Image uploaded:", imageResult.data.url);
+
+        // Prepare product data
+        const productData = {
+          name: data.name,
+          description: data.description,
+          price: data.price,
+          stock: data.stock,
+          category: data.category,
+          image: imageResult.data.url,
+        };
+
+        // Send product data to the backend with the token
+        const response = await fetch("http://localhost:5000/api/v1/product/create", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token, // Include token in headers
+          },
+          body: JSON.stringify({ data: productData }),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          toast.success("Product added successfully!");
+          reset();
+        } else {
+          toast.error(result.message || "Failed to add product");
+        }
+      } else {
+        toast.error("Image upload failed");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Something went wrong!");
+    }
   };
 
-
-  
   return (
     <div className="p-6 bg-white rounded-lg shadow-md max-w-xl mx-auto">
       <h2 className="text-2xl font-bold mb-4">Add New Product</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Product Name */}
         <div>
           <label className="block font-medium mb-1">Product Name</label>
           <input
-            type="text"
-            name="name"
-            value={product.name}
-            onChange={handleChange}
+            {...register("name")}
             className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-500"
             placeholder="Enter product name"
           />
+          {errors.name && (
+            <p className="text-red-500 text-sm">{errors.name.message}</p>
+          )}
         </div>
 
         {/* Product Price */}
         <div>
           <label className="block font-medium mb-1">Price ($)</label>
           <input
-            type="text"
-            name="price"
-            value={product.price}
-            onChange={handleChange}
+            type="number"
+            {...register("price", { valueAsNumber: true })}
             className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-500"
             placeholder="Enter product price"
           />
+          {errors.price && (
+            <p className="text-red-500 text-sm">{errors.price.message}</p>
+          )}
         </div>
 
-        {/* Product Stock (New Input) */}
+        {/* Product Stock */}
         <div>
           <label className="block font-medium mb-1">Stock</label>
           <input
             type="number"
-            name="stock"
-            value={product.stock}
-            onChange={handleChange}
+            {...register("stock", { valueAsNumber: true })}
             className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-500"
             placeholder="Enter stock quantity"
           />
+          {errors.stock && (
+            <p className="text-red-500 text-sm">{errors.stock.message}</p>
+          )}
         </div>
 
-        {/* Product Image URL */}
+        {/* Product Image Upload */}
         <div>
-          <label className="block font-medium mb-1">Image URL</label>
+          <label className="block font-medium mb-1">Upload Image</label>
           <input
-            type="text"
-            name="image"
-            value={product.image}
-            onChange={handleChange}
+            type="file"
+            {...register("image")}
             className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-500"
-            placeholder="Paste image URL"
           />
+          {errors.image && (
+            <p className="text-red-500 text-sm">{errors.image.message}</p>
+          )}
+        </div>
+
+        {/* Product Category */}
+        <div>
+          <label className="block font-medium mb-1">Category</label>
+          <input
+            {...register("category")}
+            className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+            placeholder="Enter product category"
+          />
+          {errors.category && (
+            <p className="text-red-500 text-sm">{errors.category.message}</p>
+          )}
         </div>
 
         {/* Product Description */}
         <div>
           <label className="block font-medium mb-1">Description</label>
           <textarea
-            name="description"
-            value={product.description}
-            onChange={handleChange}
+            {...register("description")}
             className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-500"
             placeholder="Enter product description"
           />
+          {errors.description && (
+            <p className="text-red-500 text-sm">{errors.description.message}</p>
+          )}
         </div>
 
         {/* Submit Button */}
@@ -122,29 +199,6 @@ export default function AddProductPage() {
           Add Product
         </button>
       </form>
-
-      {/* Display Added Products */}
-      {productList.length > 0 && (
-        <div className="mt-6">
-          <h3 className="text-xl font-bold mb-2">Product List</h3>
-          <ul className="space-y-3">
-            {productList.map((item, index) => (
-              <li key={index} className="p-3 border rounded shadow">
-                <p className="font-semibold">
-                  {item.name} - ${item.price}
-                </p>
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-20 h-20 mt-2 rounded"
-                />
-                <p className="text-gray-600">{item.description}</p>
-                <p className="text-green-700 font-bold">Stock: {item.stock}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
     </div>
   );
 }
