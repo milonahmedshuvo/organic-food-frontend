@@ -12,7 +12,6 @@ import { RootState } from '../redux/store';
 import { store } from "../redux/store"
 import { AuthState, User } from '@/types/authTypes';
 import { logout } from '@/redux/features/auth/authSlice';
-import { json } from 'stream/consumers';
 import toast from 'react-hot-toast';
 
 const Navbar = () => {
@@ -21,6 +20,13 @@ const Navbar = () => {
     const [scrolling, setScrolling] = useState(false);
     const { user } = useSelector((state: RootState) => state.auth) as AuthState
     const [currentUser, setCurrentUser] = useState<User | null>(null);
+    const allState = useSelector((state: RootState) => state.cart);
+    const products = useSelector((state: RootState) => state.cart.products);
+    const productCount = useSelector((state: RootState) => state.cart.totalProductCount);
+
+  
+
+
 
     useEffect(() => {
         const storedData = localStorage.getItem('user');
@@ -111,12 +117,14 @@ const Navbar = () => {
                             </div>
                             <CiSearch className="block md:hidden text-2xl" />
                             <div className="relative">
+                                <Link href='/cart' > 
                                 <LiaShoppingBagSolid className="text-2xl cursor-pointer" />
                                 {cartCount >= 0 && (
-                                    <span className="absolute -top-3 -right-3 bg-black text-white text-xs font-bold px-2 py-[3px] rounded-full">
-                                        {cartCount}
+                                    <span className="absolute -top-3 -right-3 bg-primary_color text-white text-xs font-bold px-2 py-[3px] rounded-full">
+                                        {productCount}
                                     </span>
                                 )}
+                                </Link>
                             </div>
                             <PiUserLight className="text-2xl cursor-pointer" />
                         </div>

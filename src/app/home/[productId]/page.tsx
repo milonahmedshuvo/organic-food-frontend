@@ -2,7 +2,7 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 'use client'
 import Image from "next/image";
-import {SetStateAction, useEffect, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
@@ -13,6 +13,8 @@ import img4 from '../../../images/product2.webp'
 import { FaStar } from "react-icons/fa";
 import { PiPlus } from "react-icons/pi";
 import { BiMinus } from "react-icons/bi";
+import { store } from "@/redux/store";
+import { addToProduct } from "@/redux/features/cart/cartSlice";
 
 
 
@@ -54,9 +56,9 @@ const page = () => {
 
   const [quantity, setQuantity] = useState(1);
 
-console.log(product?.data)
+  console.log(product?.data)
   useEffect(() => {
-    const id = window.location.pathname.split("/").pop(); 
+    const id = window.location.pathname.split("/").pop();
     if (id) {
       fetch(`http://localhost:5000/api/v1/product/${id}`)
         .then((res) => res.json())
@@ -66,27 +68,32 @@ console.log(product?.data)
     }
   }, []);
 
-  
 
 
-  
+
+
   return (
     <div className="px-3 md:px-14 lg:px-24 mt-28">
 
 
-        <div className="grid grid-cols-1 mt-5 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 mt-5 md:grid-cols-2 gap-8">
         {/*f coloumn carousel */}
         <div>
           <div className="">
-            <div className="h-[328px] md:h-[460px] rounded bg-bgcolor">
-              <Image
-                src={product?.data.image}
-                height={50}
-                width={500}
-                alt="Main Image"
-                className="h-full"
-              // className="w-full h-96 object-cover"
-              />
+            <div className="h-[228px] md:h-[300px] rounded bg-bgcolor">
+              {product?.data.image ? (
+                <Image
+                  src={product.data.image}
+                  height={500}
+                  width={500}
+                  alt="Main Image"
+                  className="h-full"
+                />
+              ) : (
+                <div className="h-full flex items-center justify-center bg-gray-200">
+                  Loading...
+                </div>
+              )}
             </div>
 
             <div className=" mt-5">
@@ -152,14 +159,14 @@ console.log(product?.data)
 
           <div className="">
             <div className="mt-4">
-              
-            <p className="text-black_color">{product?.data.description} </p>
+
+              <p className="text-black_color">{product?.data.description} </p>
 
 
               {/* <p className="text-rose-600 my-5">It is 7 pice available</p> */}
 
               <div className="mt-5">
-          
+
                 <div className="flex bg-[#ECE9FE] items-center justify-between px-3 w-32 py-2 mt-2 rounded-full">
                   <BiMinus onClick={() => setQuantity(quantity - 1)}></BiMinus>
                   <span className="text-lg">{quantity}</span>
@@ -170,9 +177,9 @@ console.log(product?.data)
 
 
               <div className="grid grid-cols-1 md:grid-cols-1 mt-7 gap-4 md:gap-8">
-                
 
-                <button className="w-full px-10 rounded-lg py-[6px] border-2 text-[16px] bg-primary_color duration-500 border-primary_color tracking-wide text-white">
+
+                <button onClick={() =>  store.dispatch(addToProduct(product))} className="w-full px-10 rounded-lg py-[6px] border-2 text-[16px] bg-primary_color duration-500 border-primary_color tracking-wide text-white">
                   Add to cart
                 </button>
               </div>
@@ -183,7 +190,7 @@ console.log(product?.data)
       </div>
 
 
-      
+
 
 
     </div>

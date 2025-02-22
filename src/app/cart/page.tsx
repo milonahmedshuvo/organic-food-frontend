@@ -1,63 +1,37 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
 import { FiTrash2, FiPlus, FiMinus } from "react-icons/fi";
+import { useSelector } from "react-redux";
+import { RootState } from '../../redux/store';
+import { store } from "../../redux/store"
+import { addToProduct, decreaseProduct, removeProduct } from "@/redux/features/cart/cartSlice";
 
-type CartItem = {
-  id: number;
+export interface TProduct {
+  _id: string;
   name: string;
+  description: string;
   price: number;
-  quantity: number;
+  stock: number;
+  category: string;
   image: string;
-};
+  currency: "BDT" | "USD";
+  quantity: number
+}
+
 
 export default function CartPage() {
-  const [cart, setCart] = useState<CartItem[]>([
-    {
-      id: 1,
-      name: "Almonds",
-      price: 15,
-      quantity: 2,
-      image: "https://htmldemo.net/jena/jena/assets/img/shop/details/1.webp",
-    },
-    {
-      id: 2,
-      name: "Organic Apples",
-      price: 5,
-      quantity: 3,
-      image: "https://htmldemo.net/jena/jena/assets/img/shop/details/1.webp",
-    },
-  ]);
+  const allState = useSelector((state: RootState) => state.cart);
 
-  // Increase quantity
-  const increaseQuantity = (id: number) => {
-    setCart(
-      cart.map((item) =>
-        item.id === id ? { ...item, quantity: item.quantity + 1 } : item
-      )
-    );
-  };
+  // console.log({allState})
+  // console.log('prduce4ee', allState?.products)
 
-  // Decrease quantity
-  const decreaseQuantity = (id: number) => {
-    setCart(
-      cart
-        .map((item) =>
-          item.id === id && item.quantity > 1
-            ? { ...item, quantity: item.quantity - 1 }
-            : item
-        )
-        .filter((item) => item.quantity > 0)
-    );
-  };
 
-  // Remove item
-  const removeItem = (id: number) => {
-    setCart(cart.filter((item) => item.id !== id));
-  };
+
+
+
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md">
+    <div className="p-6 bg-white rounded-lg shadow-md mt-28 px-3 md:px-14 lg:px-24">
       <h1 className="text-3xl font-bold text-green-800 mb-6">Shopping Cart</h1>
 
       {/* Responsive Table */}
@@ -74,9 +48,9 @@ export default function CartPage() {
             </tr>
           </thead>
           <tbody>
-            {cart.map((item, index) => (
+            {allState?.products.map((item, index) => (
               <tr
-                key={item.id}
+                key={item._id}
                 className={`text-center ${
                   index % 2 === 0 ? "bg-green-50" : "bg-white"
                 } hover:bg-green-100 transition`}
@@ -94,14 +68,14 @@ export default function CartPage() {
                 <td className="border p-3">${item.price}</td>
                 <td className="border p-3 flex justify-center items-center gap-2">
                   <button
-                    onClick={() => decreaseQuantity(item.id)}
+                    onClick={() => store.dispatch(decreaseProduct(item)) }
                     className="bg-gray-300 text-black px-2 py-1 rounded hover:bg-gray-400 transition"
                   >
                     <FiMinus />
                   </button>
                   <span className="text-lg">{item.quantity}</span>
                   <button
-                    onClick={() => increaseQuantity(item.id)}
+                    onClick={() => store.dispatch(addToProduct(item)) }
                     className="bg-gray-300 text-black px-2 py-1 rounded hover:bg-gray-400 transition"
                   >
                     <FiPlus />
@@ -111,7 +85,7 @@ export default function CartPage() {
                 <td className="border p-3">
                   <button
                     className="bg-red-500 text-white px-3 py-2 rounded flex items-center gap-1 hover:bg-red-700 transition"
-                    onClick={() => removeItem(item.id)}
+                    onClick={() => store.dispatch(removeProduct(item)) }
                   >
                     <FiTrash2 />
                   </button>
@@ -126,7 +100,7 @@ export default function CartPage() {
       <div className="mt-6 text-right">
         <p className="text-xl font-semibold">
           Total: $
-          {cart.reduce((total, item) => total + item.price * item.quantity, 0)}
+           {allState?.totaltk}
         </p>
         <button className="bg-green-600 text-white px-5 py-3 mt-4 rounded hover:bg-green-700 transition">
           Checkout

@@ -4,6 +4,9 @@ import { FaRegHeart } from "react-icons/fa";
 import { FaCartArrowDown } from "react-icons/fa6";
 import { FaEyeSlash } from "react-icons/fa";
 import Link from "next/link";
+import { store } from "../redux/store"
+import { addToProduct } from "@/redux/features/cart/cartSlice";
+
 
 interface TProduct {
   _id: string;
@@ -49,7 +52,7 @@ const Cart: React.FC<CartProps> = ({ product }) => {
 
           <div className="flex items-center gap-2 ">
             <FaCartArrowDown className="text-primary_color opacity-0 group-hover:opacity-95 transition-opacity" />
-            <button className="text-primary_color opacity-0 group-hover:opacity-95 transition-opacity">
+            <button onClick={() =>  store.dispatch(addToProduct(product))} className="text-primary_color opacity-0 group-hover:opacity-95 transition-opacity">
               Add to cart
             </button>
           </div>

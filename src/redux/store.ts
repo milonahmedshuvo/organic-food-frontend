@@ -1,6 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { organicFoodApi } from './api/foodApi'
 import authSlice from '../redux/features/auth/authSlice'
+import cartSlice from '../redux/features/cart/cartSlice'
 
 export const store = configureStore({
   reducer: {
@@ -8,7 +9,8 @@ export const store = configureStore({
     [organicFoodApi.reducerPath] : organicFoodApi.reducer,
 
     // add Redux toolkit for state managment 
-    auth : authSlice
+    auth : authSlice,
+    cart: cartSlice,
   },
 
 
