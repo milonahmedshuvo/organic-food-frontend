@@ -70,6 +70,33 @@ export default function ProductsPage() {
     closeModal();
   };
 
+  const handleDelete = async (id: string) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/v1/product/delete/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+  
+      if (!response.ok) {
+        toast.error("Failed to delete product")
+      }
+  
+      const result = await response.json();
+      console.log("Product delete successfully:", result);
+      toast.success("Product delete successfully")
+  
+      closeModal();
+      refetch()
+    } catch (err) {
+      console.log(err)
+      toast.error("Error updating product:");
+    }
+  }
+
+
+
   return (
     <div className="p-3 bg-white">
       <h1 className="text-3xl font-medium mt-5 text-green-800 mb-6">
@@ -109,7 +136,7 @@ export default function ProductsPage() {
                     <FiEdit />
                   </button>
 
-                  <button className="bg-red-500 text-white px-3 py-2 rounded flex items-center gap-1 hover:bg-red-700 transition">
+                  <button onClick={() => handleDelete(product._id)} className="bg-red-500 text-white px-3 py-2 rounded flex items-center gap-1 hover:bg-red-700 transition">
                     <FiTrash2 />
                   </button>
                 </td>
