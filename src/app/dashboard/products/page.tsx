@@ -4,6 +4,7 @@ import { useAllProductsQuery } from "@/redux/api/foodApi";
 import Image from "next/image";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 export interface TProduct {
   _id: string;
   name: string;
@@ -17,7 +18,7 @@ export interface TProduct {
 
 
 export default function ProductsPage() {
-  const { data } = useAllProductsQuery(undefined);
+  const { data, refetch } = useAllProductsQuery(undefined);
   const [ , setSelectedProduct] = useState<TProduct | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { register, handleSubmit, reset } = useForm<TProduct>();
@@ -25,7 +26,7 @@ export default function ProductsPage() {
   // Open Modal and Set Data
   const openModal = (product: TProduct) => {
     setSelectedProduct(product);
-    reset(product); // Pre-fill form with product details
+    reset(product); 
     setIsModalOpen(true);
   };
 
@@ -36,9 +37,36 @@ export default function ProductsPage() {
   };
 
   // Handle Update
-  const onSubmit = (updatedData: TProduct) => {
+  const onSubmit = async (updatedData: TProduct) => {
     console.log("Updated Data:", updatedData);
-    // TODO: Call API to update product
+    console.log("Updated Data:", updatedData._id);
+   
+    try {
+      const response = await fetch(`http://localhost:5000/api/v1/product/update/${updatedData._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedData),
+      });
+  
+      if (!response.ok) {
+        toast.error("Failed to update product")
+      }
+  
+      const result = await response.json();
+      console.log("Product updated successfully:", result);
+      toast.success("Product updated successfully")
+  
+      closeModal();
+      refetch()
+    } catch (err) {
+      console.log(err)
+      toast.error("Error updating product:");
+    }
+
+
+
     closeModal();
   };
 
