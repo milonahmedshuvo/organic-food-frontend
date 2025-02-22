@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 
 const orders = [
@@ -45,7 +45,45 @@ const orders = [
 ];
 
 export default function OrdersPage() {
-  const [orderData] = useState(orders);
+  const [orderData, setOrderData] = useState([]);
+
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const token = localStorage.getItem("accessToken");
+        if (!token) {
+          toast.error("User is not authenticated");
+          return;
+        }
+
+        const response = await fetch("http://localhost:5000/api/v1/order/all", {
+          method: "GET",
+          headers: {
+            Authorization: token,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch orders");
+        }
+
+        const data = await response.json();
+        console.log("Orders:", data.data);
+
+        setOrderData(data?.data)
+
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      }
+    };
+
+    fetchOrders();
+  }, [])
+
+
+
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-lg mx-auto">
@@ -54,12 +92,8 @@ export default function OrdersPage() {
         <table className="w-full min-w-[1000px] border-collapse border border-gray-200">
           <thead>
             <tr className="bg-green-700 text-white text-lg">
-              <th className="p-4 text-left">ID</th>
-              <th className="p-4 text-left">Product</th>
-              <th className="p-4 text-left">Name</th>
-              <th className="p-4 text-left">Price</th>
-              <th className="p-4 text-left">Qty</th>
-              <th className="p-4 text-left">Customer</th>
+              <th className="p-4 text-left">Product ID</th>
+              <th className="p-4 text-left">Customer Name</th>
               <th className="p-4 text-left">Email</th>
               <th className="p-4 text-left">Phone</th>
               <th className="p-4 text-left">Address</th>
@@ -73,48 +107,23 @@ export default function OrdersPage() {
                 key={order.id}
                 className="border-b border-gray-300 hover:bg-gray-100 transition"
               >
-                <td className="p-4 font-semibold">{order.id}</td>
-                <td className="p-4">
-                  <Image
-                    src={order.productImage}
-                    alt={order.productName}
-                    width={60}
-                    height={60}
-                    className="rounded"
-                  />
-                </td>
-
-                <td className="p-4">{order.productName}</td>
-                <td className="p-4">{order.price}</td>
-                <td className="p-4">{order.quantity}</td>
-                <td className="p-4">{order.customerName}</td>
-                <td className="p-4">{order.email}</td>
+                <td className="p-4 font-medium">{order._id.slice(0, 5)}</td>
+                <td className="p-4">{order.customer.name}</td>
+                <td className="p-4"> {order.customer.email}</td>
                 <td className="p-4">{order.phone}</td>
-                <td className="p-4">{order.address}</td>
+                <td className="p-4">{order.city}</td>
                 <td className="p-4">
                   <span
-                    className={`px-4 py-2 rounded-full text-white text-sm font-bold ${
-                      order.status === "Pending"
-                        ? "bg-yellow-500"
-                        : order.status === "Shipped"
+                    className={`px-4 py-2 rounded-full text-white text-sm font-bold ${order.status === "Pending"
+                      ? "bg-yellow-500"
+                      : order.status === "Shipped"
                         ? "bg-blue-500"
                         : "bg-green-500"
-                    }`}
+                      }`}
                   >
                     {order.status}
                   </span>
                 </td>
-                {/* <td className="p-4 space-x-2">
-                  <button className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-md transition">
-                    View
-                  </button>
-                  <button className="px-4 py-2 text-sm bg-green-600 hover:bg-green-700 text-white rounded-lg shadow-md transition">
-                    Edit
-                  </button>
-                  <button className="px-4 py-2 text-sm bg-red-600 hover:bg-red-700 text-white rounded-lg shadow-md transition">
-                    Delete
-                  </button>
-                </td> */}
               </tr>
             ))}
           </tbody>
