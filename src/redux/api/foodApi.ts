@@ -36,8 +36,10 @@ export const organicFoodApi = createApi({
       
         allProducts : builder.query({
             query : () => '/api/v1/product/all'
+        }),
+        allCustomers : builder.query({
+            query : () => '/api/v1/user/all-customers'
         })
-
 
     }),
     
@@ -46,4 +48,4 @@ export const organicFoodApi = createApi({
 
 
 
-export const { useUserRegisterMutation, useUserLoginMutation, useAllProductsQuery } = organicFoodApi
+export const { useUserRegisterMutation, useUserLoginMutation, useAllProductsQuery, useAllCustomersQuery } = organicFoodApi

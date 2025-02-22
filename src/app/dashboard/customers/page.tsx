@@ -1,31 +1,21 @@
 "use client";
-import { useState } from "react";
+import { useAllCustomersQuery } from "@/redux/api/foodApi";
+
+
+interface TUser {
+  _id : string,
+  name: string;
+  email: string;
+  phone?: string;
+  password: string;
+  role: "customer" | "admin";
+  wishlist?: string[];
+}
 
 export default function CustomerTable() {
-  // Dummy data (Replace with real API data if needed)
-  const [customers] = useState([
-    {
-      id: 1,
-      name: "John Doe",
-      email: "john@example.com",
-      phone: "0123456789",
-      address: "New York, USA",
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      email: "jane@example.com",
-      phone: "0987654321",
-      address: "London, UK",
-    },
-    {
-      id: 3,
-      name: "Michael Brown",
-      email: "michael@example.com",
-      phone: "0112233445",
-      address: "Toronto, Canada",
-    },
-  ]);
+  const {data} = useAllCustomersQuery(undefined)
+  
+
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-md mx-auto">
@@ -40,21 +30,19 @@ export default function CustomerTable() {
               <th className="border border-gray-300 p-3 text-left">#</th>
               <th className="border border-gray-300 p-3 text-left">Name</th>
               <th className="border border-gray-300 p-3 text-left">Email</th>
-              <th className="border border-gray-300 p-3 text-left">Phone</th>
-              <th className="border border-gray-300 p-3 text-left">Address</th>
+              <th className="border border-gray-300 p-3 text-left">Role</th>
             </tr>
           </thead>
 
           {/* Table Body */}
           <tbody>
-            {customers.map((customer, index) => (
-              <tr key={customer.id} className="odd:bg-gray-100 even:bg-white">
+            {data?.data?.map((customer:TUser, index:number) => (
+              <tr key={customer._id} className="odd:bg-gray-100 even:bg-white">
                 <td className="border border-gray-300 p-3">{index + 1}</td>
                 <td className="border border-gray-300 p-3">{customer.name}</td>
                 <td className="border border-gray-300 p-3">{customer.email}</td>
-                <td className="border border-gray-300 p-3">{customer.phone}</td>
                 <td className="border border-gray-300 p-3">
-                  {customer.address}
+                  {customer.role}
                 </td>
               </tr>
             ))}

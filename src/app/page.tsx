@@ -1,14 +1,14 @@
 import Banner from "@/components/banner";
-import Cart from "@/components/cart";
+import Products from "./home/page";
+
 
 
 
 export default function Home() {
   return (
      <div>
-         
-         <Banner/>
-         <Cart/>
+          <Banner/>
+          <Products/>
      </div>
   );
 }
