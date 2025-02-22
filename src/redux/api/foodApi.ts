@@ -32,11 +32,18 @@ export const organicFoodApi = createApi({
                     body : data
                 }
             }
+        }),
+      
+        allProducts : builder.query({
+            query : () => '/api/v1/product/all'
         })
-    }) 
+
+
+    }),
+    
 })
 
 
 
 
-export const { useUserRegisterMutation, useUserLoginMutation } = organicFoodApi
+export const { useUserRegisterMutation, useUserLoginMutation, useAllProductsQuery } = organicFoodApi

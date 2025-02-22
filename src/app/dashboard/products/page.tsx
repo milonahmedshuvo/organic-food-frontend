@@ -1,63 +1,58 @@
 "use client";
 import { useState } from "react";
+import { useAllProductsQuery } from "@/redux/api/foodApi";
+import Image from "next/image";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
-
-type Product = {
-  id: number;
+import { useForm } from "react-hook-form";
+export interface TProduct {
+  _id: string;
   name: string;
+  description: string;
   price: number;
   stock: number;
-};
+  category: string;
+  image: string;
+  currency: "BDT" | "USD";
+}
+
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>([
-    { id: 1, name: "Almonds", price: 15, stock: 30 },
-    { id: 2, name: "Organic Apples", price: 5, stock: 50 },
-    { id: 3, name: "Walnuts", price: 20, stock: 25 },
-  ]);
-
+  const { data } = useAllProductsQuery(undefined);
+  const [ , setSelectedProduct] = useState<TProduct | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
+  const { register, handleSubmit, reset } = useForm<TProduct>();
 
-  // Open modal with selected product
-  const handleEdit = (product: Product) => {
-    setCurrentProduct(product);
+  // Open Modal and Set Data
+  const openModal = (product: TProduct) => {
+    setSelectedProduct(product);
+    reset(product); // Pre-fill form with product details
     setIsModalOpen(true);
   };
 
-  // Handle input change in modal
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!currentProduct) return;
-    const { name, value } = e.target;
-    setCurrentProduct((prev) => ({ ...prev!, [name]: value }));
+  // Close Modal
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedProduct(null);
   };
 
-  // Save updated product
-  const handleSave = () => {
-    if (!currentProduct) return;
-    setProducts((prev) =>
-      prev.map((p) => (p.id === currentProduct.id ? currentProduct : p))
-    );
-    setIsModalOpen(false); // Close modal
-  };
-
-  // Handle delete
-  const handleDelete = (id: number) => {
-    setProducts(products.filter((product) => product.id !== id));
+  // Handle Update
+  const onSubmit = (updatedData: TProduct) => {
+    console.log("Updated Data:", updatedData);
+    // TODO: Call API to update product
+    closeModal();
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md">
-      <h1 className="text-3xl font-bold text-green-800 mb-6">
+    <div className="p-3 bg-white">
+      <h1 className="text-3xl font-medium mt-5 text-green-800 mb-6">
         Manage Products
       </h1>
 
-      {/* Responsive Table Container */}
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse border border-green-300">
+        <table className="w-full border-collapse">
           <thead>
             <tr className="bg-green-200 text-left">
-              <th className="border p-3 text-center">ID</th>
+              <th className="border p-3 text-center">Image</th>
               <th className="border p-3 text-center">Name</th>
               <th className="border p-3 text-center">Price</th>
               <th className="border p-3 text-center">Stock</th>
@@ -65,31 +60,28 @@ export default function ProductsPage() {
             </tr>
           </thead>
           <tbody>
-            {products.map((product, index) => (
+            {data?.data?.map((product: TProduct, index: number) => (
               <tr
-                key={product.id}
+                key={product._id}
                 className={`text-center ${
                   index % 2 === 0 ? "bg-green-50" : "bg-white"
                 } hover:bg-green-100 transition`}
               >
-                <td className="border p-3">{product.id}</td>
-                <td className="border p-3 font-semibold">{product.name}</td>
-                <td className="border p-3">${product.price}</td>
-                <td className="border p-3">{product.stock}</td>
-                <td className="border p-3 flex justify-center gap-2">
-                  {/* Edit Button */}
+                <td>
+                  <Image src={product.image} width={70} height={50} alt="img" />
+                </td>
+                <td className="font-normal text-black_color">{product.name}</td>
+                <td>${product.price}</td>
+                <td>{product.stock}</td>
+                <td className="flex items-center justify-center gap-2 mt-3">
                   <button
+                    onClick={() => openModal(product)}
                     className="bg-blue-500 text-white px-3 py-2 rounded flex items-center gap-1 hover:bg-blue-700 transition"
-                    onClick={() => handleEdit(product)}
                   >
                     <FiEdit />
                   </button>
 
-                  {/* Delete Button */}
-                  <button
-                    className="bg-red-500 text-white px-3 py-2 rounded flex items-center gap-1 hover:bg-red-700 transition"
-                    onClick={() => handleDelete(product.id)}
-                  >
+                  <button className="bg-red-500 text-white px-3 py-2 rounded flex items-center gap-1 hover:bg-red-700 transition">
                     <FiTrash2 />
                   </button>
                 </td>
@@ -99,63 +91,61 @@ export default function ProductsPage() {
         </table>
       </div>
 
-      {/* Modal */}
-      {isModalOpen && currentProduct && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h2 className="text-xl font-bold mb-4">Edit Product</h2>
+      {/* Update Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+            <h2 className="text-xl font-semibold mb-4">Update Product</h2>
 
-            {/* Name Input */}
-            <label className="block mb-2">
-              <span className="text-gray-700">Name:</span>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <input
-                type="text"
-                name="name"
-                value={currentProduct.name}
-                onChange={handleChange}
-                className="w-full p-2 border rounded mt-1"
+                {...register("name")}
+                className="w-full p-2 border rounded"
+                placeholder="Product Name"
               />
-            </label>
 
-            {/* Price Input */}
-            <label className="block mb-2">
-              <span className="text-gray-700">Price:</span>
+              <textarea
+                {...register("description")}
+                className="w-full p-2 border rounded"
+                placeholder="Description"
+              />
+
               <input
+                {...register("price")}
                 type="number"
-                name="price"
-                value={currentProduct.price}
-                onChange={handleChange}
-                className="w-full p-2 border rounded mt-1"
+                className="w-full p-2 border rounded"
+                placeholder="Price"
               />
-            </label>
 
-            {/* Stock Input */}
-            <label className="block mb-4">
-              <span className="text-gray-700">Stock:</span>
               <input
+                {...register("stock")}
                 type="number"
-                name="stock"
-                value={currentProduct.stock}
-                onChange={handleChange}
-                className="w-full p-2 border rounded mt-1"
+                className="w-full p-2 border rounded"
+                placeholder="Stock"
               />
-            </label>
 
-            {/* Buttons */}
-            <div className="flex justify-end gap-2">
-              <button
-                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-700"
-                onClick={() => setIsModalOpen(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700"
-                onClick={handleSave}
-              >
-                Save
-              </button>
-            </div>
+              <input
+                {...register("category")}
+                className="w-full p-2 border rounded"
+                placeholder="Category"
+              />
+
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-700"
+                >
+                  Update
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
